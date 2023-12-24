@@ -17,6 +17,7 @@ from curses import wrapper
 import time
 import os
 import sys
+import string
 
 MAINPATH = './data/'
 HIGHSCORE_PATH = MAINPATH + '.highscore'
@@ -28,6 +29,7 @@ KEYN = {
 }
 TIMEPERANS = 20
 POINTS, LASTPOINT = 0, 0
+DBFILE_FIELDSEPARATOR = '-'
 # ---------------------------------------------------------------------------------------
 # 
 #
@@ -35,26 +37,28 @@ POINTS, LASTPOINT = 0, 0
 # Prepares (or loads) question set for the No Vowels round from Only Connect
 def readyset():
     global questionset, HIGHSCORE
-    
     # Caching Proces
     if not os.path.isfile('./data/questionset.p'):
         # If the file .isready does not exist, then program will prepare the questionset
         # from scratc
         dataset = {}
-        
         # Gets all files from the MAINPATH with specified DBPREFIX
         # These are the input files to be read
         INPUTDATASETS = []
         for file in list(os.walk(MAINPATH))[0][2]:
             if file.startswith(DBPREFIX):
                 INPUTDATASETS.append(file)
-        
+
+        # Cleanup of files to remove non-alphabet characters
+        _onlyab = list(string.ascii_uppercase) + [' ']
         # Read all input datasets provided
         for file in INPUTDATASETS:
             with open(f'{MAINPATH}/{file}', 'r') as f:
-                dataset[file] = f.read().split('\n')
-        
-        
+                pv = [list(x.split('-')[0].upper()) for x in f.read().split('\n') if len(x) > 0]
+                pv = [[y for y in x if y in _onlyab] for x in pv]
+                dataset[file] = [''.join(x) for x in pv]
+
+
         questionset = []
         vowels = ['A', 'E', 'I', 'O', 'U']
         # For each category in the dataset
@@ -72,19 +76,19 @@ def readyset():
                     ques.insert(rs + pos, ' ')
                 ques = ''.join(ques)
                 ques = ' '.join(ques.split())
-                
+
                 # Add to questionset
                 category = key.replace(DBPREFIX, '').capitalize()
+                category = ' '.join(category.split('.')[0].split(DBFILE_FIELDSEPARATOR))
                 questionset.append({'question': ques, 'answer': item, 'category': category})
-        
+
         # Store questionset to pickle file
         pickle.dump(questionset, open(f'{MAINPATH}/questionset.p', 'wb'))
-        os.system(f'echo 0 > {HIGHSCORE_PATH}')
+        pickle.dump(0, open(HIGHSCORE_PATH, 'wb'))
     else:
         # If file exists, directly load questionset
         questionset = pickle.load(open(f'{MAINPATH}/questionset.p', 'rb'))
-        with open(HIGHSCORE_PATH, 'r') as f:
-            HIGHSCORE = int(f.read())
+        HIGHSCORE = pickle.load(open(HIGHSCORE_PATH, 'rb'))
 # ---------------------------------------------------------------------------------------
 # 
 #
@@ -228,7 +232,10 @@ def titlescreen(stdscr, quesWin):
     stdscr.addstr(int(MAXROW * 0.1), getxpos(title_string), title_string, ATTR['title'] )
     stdscr.addstr(int(MAXROW * 0.15), 0, '.'*MAXCOL, ATTR['category'] )
     stdscr.addstr(int(MAXROW * 0.7), 0, '.'*MAXCOL, ATTR['category'] )
-    points_scored = f'Your highest win streak is {HIGHSCORE} wins.'
+    try:
+        points_scored = f'Your highest win streak is {HIGHSCORE} wins.'
+    except Exception:
+        points_score = ''
     stdscr.addstr(int(MAXROW * 0.8), getxpos(points_scored), points_scored, ATTR['category'] )
     stdscr.refresh()
     #
