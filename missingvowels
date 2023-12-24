@@ -20,7 +20,7 @@ import sys
 import string
 
 MAINPATH = './data/'
-HIGHSCORE_PATH = MAINPATH + '.highscore'
+storedHighScore_PATH = MAINPATH + 'highscore.p'
 DBPREFIX = 'db_'
 KEYN = {
     'backspace': 127,
@@ -36,7 +36,7 @@ DBFILE_FIELDSEPARATOR = '-'
 # ---------------------------------------------------------------------------------------
 # Prepares (or loads) question set for the No Vowels round from Only Connect
 def readyset():
-    global questionset, HIGHSCORE
+    global questionset, storedHighScore
     # Caching Proces
     if not os.path.isfile('./data/questionset.p'):
         # If the file .isready does not exist, then program will prepare the questionset
@@ -84,11 +84,12 @@ def readyset():
 
         # Store questionset to pickle file
         pickle.dump(questionset, open(f'{MAINPATH}/questionset.p', 'wb'))
-        pickle.dump(0, open(HIGHSCORE_PATH, 'wb'))
+        storedHighScore = 0
+        pickle.dump(storedHighScore, open(storedHighScore_PATH, 'wb'))
     else:
         # If file exists, directly load questionset
         questionset = pickle.load(open(f'{MAINPATH}/questionset.p', 'rb'))
-        HIGHSCORE = pickle.load(open(HIGHSCORE_PATH, 'rb'))
+        storedHighScore = pickle.load(open(storedHighScore_PATH, 'rb'))
 # ---------------------------------------------------------------------------------------
 # 
 #
@@ -102,17 +103,16 @@ def getxpos(entry):
 # ---------------------------------------------------------------------------------------
 # Adding Progress Bar
 def showResult(stdscr, quesWin, ansPad, resultnumber, typedAnswer, correctAnswer):
-    global POINTS, HIGHSCORE, LASTPOINT
+    global POINTS, storedHighScore, LASTPOINT
     # Announce Result
     if resultnumber == 1:
         POINTS += 1
         LASTPOINT = POINTS
     else:
         LASTPOINT = POINTS
-        if POINTS > HIGHSCORE:
-            HIGHSCORE = POINTS
-            with open(HIGHSCORE_PATH, 'w+') as f:
-                f.write(f'{HIGHSCORE}')
+        if POINTS > storedHighScore:
+            storedHighScore = POINTS
+            pickle.dump(storedHighScore, open(storedHighScore_PATH, 'wb'))
         POINTS = 0
     resultstr = [':(', ':)', ':('][resultnumber]
     whichTense = ['have ended the round on', 'are currently on', 'have ended the round on'][resultnumber]
@@ -232,10 +232,7 @@ def titlescreen(stdscr, quesWin):
     stdscr.addstr(int(MAXROW * 0.1), getxpos(title_string), title_string, ATTR['title'] )
     stdscr.addstr(int(MAXROW * 0.15), 0, '.'*MAXCOL, ATTR['category'] )
     stdscr.addstr(int(MAXROW * 0.7), 0, '.'*MAXCOL, ATTR['category'] )
-    try:
-        points_scored = f'Your highest win streak is {HIGHSCORE} wins.'
-    except Exception:
-        points_scored = ''
+    points_scored = f'Your highest win streak is {storedHighScore} wins.'
     stdscr.addstr(int(MAXROW * 0.8), getxpos(points_scored), points_scored, ATTR['category'] )
     stdscr.refresh()
     #
