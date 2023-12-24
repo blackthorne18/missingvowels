@@ -1,0 +1,6 @@
+# Ignore
+data/*
+.DS_Store
+
+# Do not ignore
+!data/db_*
