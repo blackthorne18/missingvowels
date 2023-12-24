@@ -235,7 +235,7 @@ def titlescreen(stdscr, quesWin):
     try:
         points_scored = f'Your highest win streak is {HIGHSCORE} wins.'
     except Exception:
-        points_score = ''
+        points_scored = ''
     stdscr.addstr(int(MAXROW * 0.8), getxpos(points_scored), points_scored, ATTR['category'] )
     stdscr.refresh()
     #
