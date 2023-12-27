@@ -30,6 +30,7 @@ KEYN = {
 TIMEPERANS = 20
 POINTS, LASTPOINT = 0, 0
 DBFILE_FIELDSEPARATOR = '-'
+ISRECACHE = False
 # ---------------------------------------------------------------------------------------
 # 
 #
@@ -38,7 +39,7 @@ DBFILE_FIELDSEPARATOR = '-'
 def readyset():
     global questionset, storedHighScore
     # Caching Proces
-    if not os.path.isfile('./data/questionset.p'):
+    if not os.path.isfile('./data/questionset.p') or ISRECACHE:
         # If the file .isready does not exist, then program will prepare the questionset
         # from scratc
         dataset = {}
@@ -76,7 +77,7 @@ def readyset():
                     ques.insert(rs + pos, ' ')
                 ques = ''.join(ques)
                 ques = ' '.join(ques.split())
-
+                item = ' '.join(item.split()).title()
                 # Add to questionset
                 category = key.replace(DBPREFIX, '').capitalize()
                 category = ' '.join(category.split('.')[0].split(DBFILE_FIELDSEPARATOR))
@@ -119,14 +120,14 @@ def showResult(stdscr, quesWin, ansPad, resultnumber, typedAnswer, correctAnswer
     highlightAns = ['wrong', 'correct', 'wrong'][resultnumber]
     # Add typedAnswer
     ansPad.clear()
-    typedAnswer = f'Your response: {typedAnswer.capitalize()}'
+    typedAnswer = f'Your response: {typedAnswer.title()}'
     split_a = typedAnswer.split(':')[0] + ": "
     split_b = typedAnswer.split(':')[1][1:]
     ansPad.addstr(1, getxpos(typedAnswer), split_a, ATTR['intro'] )
     ansPad.addstr(1, getxpos(typedAnswer) + len(split_a), split_b, ATTR[highlightAns] )
     ansPad.refresh()
     # Add correct Answer
-    correctAnswer = f'Answer: {correctAnswer.capitalize()}'
+    correctAnswer = f'Answer: {correctAnswer.title()}'
     quesWin.addstr(4, getxpos(correctAnswer), correctAnswer, ATTR['title'] )
     # Showing the score
     currentPoints = f'You {whichTense} {LASTPOINT} points ' + resultstr
@@ -187,7 +188,7 @@ def beginround(stdscr, quesWin):
             userinput = stdscr.getch()
         except Exception:
             pass
-        
+        _isinput = True
         # If block begins
         if userinput == KEYN['escape']:
             titlescreen(stdscr, quesWin)
@@ -199,8 +200,11 @@ def beginround(stdscr, quesWin):
                 typedAnswer += chr(userinput)
             else:
                 typedAnswer = typedAnswer[:-1]
+        else:
+            _isinput = False
         # Initialise answer window
-        ansPad.clear()
+        if _isinput:
+            ansPad.clear()
         #
         # Adding progress bar
         timenow = int(time.time() - start_time)
@@ -209,12 +213,12 @@ def beginround(stdscr, quesWin):
         progresbar = '[{}{}]'.format('#' * timenow, ' ' * (TIMEPERANS - timenow))
         ansPad.addstr(5, getxpos(progresbar), progresbar)
         #
-        # Show current score
-        currentPoints = f'Points scored:{POINTS}'
-        ansPad.addstr(3, getxpos(currentPoints), currentPoints, ATTR['intro'] )
-        #
         # Enter typed answer
         ansPad.addstr(1, getxpos(typedAnswer), typedAnswer, ATTR['intro'] )
+        #
+        # Show current score
+        # currentPoints = f'Points scored:{POINTS}'
+        # ansPad.addstr(3, getxpos(currentPoints), currentPoints, ATTR['intro'] )
         #
         ansPad.refresh()
 # ---------------------------------------------------------------------------------------
@@ -290,7 +294,13 @@ def main(stdscr):
 #
 # ---------------------------------------------------------------------------------------
 if __name__ == '__main__':
+    global RECACHE
     try:
+        if len(sys.argv) > 1:
+            try:
+                RECACHE = int(sys.argv[1])
+            except Exception:
+                pass
         wrapper(main)
     except KeyboardInterrupt:
         print('Program killed')
