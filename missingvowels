@@ -19,7 +19,7 @@ import os
 import sys
 import string
 
-MAINPATH = './data/'
+MAINPATH = os.path.abspath(__file__) + '/data/'
 storedHighScore_PATH = MAINPATH + 'highscore.p'
 DBPREFIX = 'db_'
 KEYN = {
