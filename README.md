@@ -2,7 +2,11 @@
 
 ## Play
 Play the missing vowels round from Only Connect!
-`./missingvowels` 
+<br>
+You will be given only consonants from well known phrases and words from the given categoery with the vowels removed. You need to guess what the full word is and type it in. For example, if the question is "NGLND" and the category is Countries, the answer would be "ENGLAND".<br>
+Try it out and challenge yourself. WWhat's the longest streak you can get?
+<br>
+Run `./missingvowels` 
 or 
 `missingvowels` if it has been added to your $PATH
 
