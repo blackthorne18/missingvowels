@@ -21,3 +21,5 @@ or
 ## Adding new datasets
 Add a file named `db_[name]` where `name` is a category of the files. Do not include whitespaces in the `name`, instead use '-' as the separator.
 Ensure there is only one entry per line of the file.
+
+## Open for suggestions! Contact me
